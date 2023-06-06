@@ -4,7 +4,7 @@ import pypianoroll
 from pypianoroll import Track, Multitrack
 import numpy as np
 
-latent_dim = 128  # Define the dimension of the latent vector
+latent_dim = 256  # Define the dimension of the latent vector
 latent = torch.randn(1, latent_dim)  # Generate a random latent vector
 beat_resolution = 4
 lowest_pitch = 24
@@ -130,49 +130,24 @@ class Discriminator(torch.nn.Module):
         return x
 
 
-generator = Generator()
-checkpoint = torch.load("./music_models/q1_model.pt", map_location=torch.device("cpu"))
-generator.load_state_dict(checkpoint["generator_state_dict"])
-generator.eval()  # Set the generator to evaluation mode
-programs = [0, 0, 25, 33, 48]
-is_drums = [True, False, False, False, False]
-track_names = ["Drums", "Piano", "Guitar", "Bass", "Strings"]
-samples = (
-    generator(latent).detach().cpu().numpy()
-)  # Generate a sample using the loaded generator
-samples = samples.transpose(1, 0, 2, 3).reshape(n_tracks, -1, n_pitches)
-tracks = []
-for idx, (program, is_drum, track_name) in enumerate(
-    zip(programs, is_drums, track_names)
-):
-    pianoroll = np.pad(
-        samples[idx] > 0.5, ((0, 0), (lowest_pitch, 128 - lowest_pitch - n_pitches))
-    )
-    tracks.append(
-        Track(
-            name=track_name, program=program, is_drum=is_drum, pianoroll=pianoroll
-        ).standardize()
-    )
-m = Multitrack(tracks=tracks, tempo=tempo_array, resolution=beat_resolution)
-
-
-# midi = pypianoroll.to_pretty_midi(m)
-# midi.write("output_q1.mid")
-
-
 def generate_music(quadrant):
     generator = Generator()
     model_name = "./music_models/q" + str(quadrant) + "_model.pt"
     checkpoint = torch.load(model_name, map_location=torch.device("cpu"))
     generator.load_state_dict(checkpoint["generator_state_dict"])
     generator.eval()  # Set the generator to evaluation mode
+
+    latent = torch.randn(1, latent_dim)  # Generate a new latent vector
+
     programs = [0, 0, 25, 33, 48]
     is_drums = [True, False, False, False, False]
     track_names = ["Drums", "Piano", "Guitar", "Bass", "Strings"]
+
     samples = (
         generator(latent).detach().cpu().numpy()
     )  # Generate a sample using the loaded generator
     samples = samples.transpose(1, 0, 2, 3).reshape(n_tracks, -1, n_pitches)
+
     tracks = []
     for idx, (program, is_drum, track_name) in enumerate(
         zip(programs, is_drums, track_names)
@@ -185,5 +160,6 @@ def generate_music(quadrant):
                 name=track_name, program=program, is_drum=is_drum, pianoroll=pianoroll
             ).standardize()
         )
+
     m = Multitrack(tracks=tracks, tempo=tempo_array, resolution=beat_resolution)
     return m
