@@ -8,7 +8,7 @@ import cv2
 import statistics
 from generation import generate_music, pypianoroll
 
-model = YOLO("yolov8n.pt")  # load an official model
+model = YOLO("yolov8n-face.pt")  # load an official model
 
 # OpenCV webcam capture
 video_capture = cv2.VideoCapture(0)
@@ -26,7 +26,7 @@ font = pygame.font.Font(None, 36)  # Create a font object for text rendering
 clock = pygame.time.Clock()
 
 pygame.mixer.init()
-pygame.mixer.music.load("output.mid")
+# pygame.mixer.music.load("output.mid")
 
 running = True
 while running:
@@ -71,12 +71,12 @@ while running:
             else 4
         )
 
-    music = generate_music(quadrant)
-    midi_music = pypianoroll.to_pretty_midi(music)
-    midi_music.write("output.mid")  # Save the generated music to a MIDI file
+    # music = generate_music(quadrant)
+    # midi_music = pypianoroll.to_pretty_midi(music)
+    # midi_music.write("output.mid")  # Save the generated music to a MIDI file
 
-    if not pygame.mixer.music.get_busy():
-        pygame.mixer.music.play()
+    # if not pygame.mixer.music.get_busy():
+        # pygame.mixer.music.play()
 
     # Create surfaces for image, text, and button
     image_surface = pygame.surfarray.make_surface(
