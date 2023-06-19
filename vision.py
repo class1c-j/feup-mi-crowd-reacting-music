@@ -8,20 +8,20 @@ import cv2
 import statistics
 from generation import generate_music
 
-model = YOLO("yolov8n-face.pt")  # load an official model
+model = YOLO("yolov8n-face.pt")
 
-# OpenCV webcam capture
-video_capture = cv2.VideoCapture(0)
+source = "video.mp4"  # Change to 0 to use webcam
+video_capture = cv2.VideoCapture(source)
 _, frame = video_capture.read()
 height, width, _ = frame.shape
 
 pygame.init()
-screen_width = width + 300  # Width of the pygame screen
-screen_height = height
-screen = pygame.display.set_mode((screen_width, screen_height))
+window_width = 1200
+window_height = 800
+screen = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption("Emotion Detection")
 
-font = pygame.font.Font(None, 36)  # Create a font object for text rendering
+font = pygame.font.Font(None, 48)
 
 clock = pygame.time.Clock()
 
@@ -34,8 +34,8 @@ while running:
             running = False
 
     ret, frame = video_capture.read()
-    frame = cv2.flip(frame, 1)  # Flip the frame horizontally
-    frame = np.rot90(frame)  # Rotate the frame 90 degrees
+    frame = cv2.flip(frame, 1)
+    frame = np.rot90(frame)
 
     image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
@@ -70,28 +70,39 @@ while running:
             else 4
         )
 
+    volume = 1.0 if quadrant in [1, 2] else 0.5
+    pygame.mixer.music.set_volume(volume)
+
     if not pygame.mixer.music.get_busy() and quadrant > 0:
         generate_music(quadrant)
         pygame.mixer.music.load("current.mid")
         pygame.mixer.music.play()
 
-    # Create surfaces for image, text, and button
+    scale_factor = min(window_width / width, window_height / height)
+    scaled_width = int(scale_factor * width)
+    scaled_height = int(scale_factor * height)
+    scaled_frame = cv2.resize(frame, (scaled_width, scaled_height))
+
+    frame_x = (window_width - scaled_width) // 2
+    frame_y = (window_height - scaled_height) // 2
+
     image_surface = pygame.surfarray.make_surface(
-        cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        cv2.cvtColor(scaled_frame, cv2.COLOR_BGR2RGB)
     )
+
+    screen.fill((0, 0, 0))
     emotion_surface = font.render(f"Emotion: {main_emotion}", True, (255, 255, 255))
     quadrant_surface = font.render(f"Quadrant: {quadrant}", True, (255, 255, 255))
     people_surface = font.render(f"People: {number_of_people}", True, (255, 255, 255))
 
-    screen.fill((0, 0, 0))  # Clear the screen
+    screen.fill((0, 0, 0))
 
-    # Blit image surface on the left side
     screen.blit(image_surface, (0, 0))
 
-    # Blit text surface and button surface on the right side
-    screen.blit(emotion_surface, (width + 20, 20))
-    screen.blit(quadrant_surface, (width + 20, 50))
-    screen.blit(people_surface, (width + 20, 80))
+    text_x = window_width - 280
+    screen.blit(emotion_surface, (text_x, 20))
+    screen.blit(quadrant_surface, (text_x, 60))
+    screen.blit(people_surface, (text_x, 100))
 
     pygame.display.flip()
     clock.tick(30)

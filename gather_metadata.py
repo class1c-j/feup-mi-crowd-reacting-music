@@ -2,19 +2,14 @@ import os
 import csv
 from tqdm import tqdm
 
-# Path to the dataset folder
 dataset_folder = "./data/lpd_5/lpd_5_cleansed/"
 
-# Path to the cleansed_ids.txt file
 cleansed_ids_file = "./data/lpd/cleansed_ids.txt"
 
-# Path to the unique_tracks.txt file
 unique_tracks_file = "./data/lpd/unique_tracks.txt"
 
-# Path to save the output CSV file
 output_csv_file = "./data/named_lpd.csv"
 
-# Read the cleansed_ids.txt file into a dictionary
 id_mapping = {}
 with open(cleansed_ids_file, "r", encoding="UTF-8") as f:
     for line in f:
@@ -22,8 +17,6 @@ with open(cleansed_ids_file, "r", encoding="UTF-8") as f:
         if len(parts) == 2:
             id_mapping[parts[0]] = parts[1]
 
-
-# Read the unique_tracks.txt file into a dictionary
 track_mapping = {}
 with open(unique_tracks_file, "r", encoding="UTF-8") as f:
     for line in f:
@@ -39,8 +32,6 @@ total_files = sum(
     if file.endswith(".npz")
 )
 
-
-# Iterate through the dataset folder
 output_data = []
 with tqdm(total=total_files, desc="Processing") as pbar:
     for root, dirs, files in os.walk(dataset_folder):
@@ -53,7 +44,7 @@ with tqdm(total=total_files, desc="Processing") as pbar:
                     output_data.append([npz_path, artist, track_title])
                 pbar.update(1)
 
-# Write the output data to the CSV file
+
 with open(output_csv_file, "w", newline="", encoding="UTF-8") as f:
     writer = csv.writer(f)
     writer.writerow(["Path to NPZ", "Artist", "Track Title"])

@@ -3,8 +3,8 @@ from pypianoroll import Multitrack, BinaryTrack
 import numpy as np
 import matplotlib.pyplot as plt
 
-latent_dim = 128  # Define the dimension of the latent vector
-latent = torch.randn(1, latent_dim)  # Generate a random latent vector
+latent_dim = 128
+latent = torch.randn(1, latent_dim)
 beat_resolution = 4
 lowest_pitch = 24
 n_pitches = 72
@@ -104,9 +104,6 @@ class Discriminator(torch.nn.Module):
 
 
 class LayerNorm(torch.nn.Module):
-    """An implementation of Layer normalization that does not require size
-    information. Copied from https://github.com/pytorch/pytorch/issues/1959."""
-
     def __init__(self, n_features, eps=1e-5, affine=True):
         super().__init__()
         self.n_features = n_features
@@ -165,7 +162,5 @@ def generate_music(quadrant, display=False):
                     ax.axvline(x - 0.5, color="k", linestyle="-", linewidth=1)
         plt.show()
 
-    # Convert Multitrack to PrettyMIDI
     midi_music = m.to_pretty_midi()
     midi_music.write("current.mid")
-
